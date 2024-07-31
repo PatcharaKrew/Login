@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:final_login/constants/color.dart';
+import 'package:final_login/screen/homepage.dart';
 import 'package:final_login/screen/register_page2.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => RegisterPage2()),
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
     }
   }
@@ -77,14 +78,9 @@ class _LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide(color: borderColor, width: 1),
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'กรุณากรอกรหัสบัตรประชาชน';
-                        } else if (value.length != 13) {
-                          return 'รหัสบัตรประชาชนต้องมีความยาว 13 หลัก';
-                        }
-                        return null;
-                      },
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'กรุณากรอกรหัสบัตรประชาชน'
+                          : null,
                     ),
                     SizedBox(height: 25),
                     TextFormField(
