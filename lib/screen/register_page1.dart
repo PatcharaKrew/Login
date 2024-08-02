@@ -1,7 +1,8 @@
-import 'package:final_login/constants/color.dart';
-import 'package:final_login/screen/register_page2.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:intl/intl.dart';
+import 'package:final_login/constants/color.dart';
+import 'package:final_login/screen/register_page2.dart';
 
 @RoutePage()
 class RegisterPage1 extends StatefulWidget {
@@ -19,7 +20,33 @@ class _RegisterPage1State extends State<RegisterPage1> {
   final TextEditingController _passwordController = TextEditingController();
   String selectedTitle = 'นาย';
   String selectedGender = 'ชาย';
+  DateTime _selectedDate = DateTime.now();
   final _formKey = GlobalKey<FormState>();
+
+  String _convertToBuddhistYear(DateTime date) {
+    final buddhistCalendarYear = date.year + 543;
+    return '${buddhistCalendarYear}-${DateFormat('MM-dd').format(date)}';
+  }
+
+  DateTime _convertToGregorian(int buddhistYear, int month, int day) {
+    return DateTime(buddhistYear - 543, month, day);
+  }
+
+  Future<void> _selectDate() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return DatePickerWidget(
+          initialDate: _selectedDate,
+          onDateSelected: (DateTime date) {
+            setState(() {
+              _selectedDate = date;
+            });
+          },
+        );
+      },
+    );
+  }
 
   void _next() {
     if (_formKey.currentState!.validate()) {
@@ -34,9 +61,9 @@ class _RegisterPage1State extends State<RegisterPage1> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Form(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +82,7 @@ class _RegisterPage1State extends State<RegisterPage1> {
                     Expanded(
                       flex: 1,
                       child: DropdownButtonFormField<String>(
-                        value: selectedTitle, // กำหนดค่าเริ่มต้น
+                        value: selectedTitle,
                         items: ['นาย', 'นาง', 'นางสาว'].map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -75,8 +102,7 @@ class _RegisterPage1State extends State<RegisterPage1> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(15)),
-                            borderSide:
-                                BorderSide(color: borderColor, width: 1),
+                            borderSide: BorderSide(color: borderColor, width: 1),
                           ),
                         ),
                         validator: (value) =>
@@ -96,8 +122,7 @@ class _RegisterPage1State extends State<RegisterPage1> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(15)),
-                            borderSide:
-                                BorderSide(color: borderColor, width: 1),
+                            borderSide: BorderSide(color: borderColor, width: 1),
                           ),
                         ),
                         validator: (value) => value == null || value.isEmpty
@@ -144,83 +169,222 @@ class _RegisterPage1State extends State<RegisterPage1> {
                       : null,
                 ),
                 SizedBox(height: 20),
-                Row(children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextFormField(
-                      controller: _phoneController,
-                      decoration: InputDecoration(
-                        labelText: 'เบอร์โทร',
-                        labelStyle: TextStyle(color: textMainColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(25)),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: TextFormField(
+                        controller: _phoneController,
+                        decoration: InputDecoration(
+                          labelText: 'เบอร์โทร',
+                          labelStyle: TextStyle(color: textMainColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(25)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            borderSide: BorderSide(color: borderColor, width: 1),
+                          ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: borderColor, width: 1),
-                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'กรุณากรอกเบอร์โทร'
+                            : null,
                       ),
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'กรุณากรอกเบอร์โทร'
-                          : null,
+                    ),
+                    SizedBox(width: 5),
+                    Expanded(
+                      flex: 1,
+                      child: DropdownButtonFormField<String>(
+                        value: selectedGender,
+                        items: ['ชาย', 'หญิง', 'อื่นๆ'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedGender = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'เพศ',
+                          labelStyle: TextStyle(color: textMainColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(25)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            borderSide: BorderSide(color: borderColor, width: 1),
+                          ),
+                        ),
+                        validator: (value) =>
+                            value == null ? 'กรุณาเลือกเพศ' : null,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _selectDate,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: borderColor),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'วันเกิด: ${_convertToBuddhistYear(_selectedDate)}',
+                          style: TextStyle(fontSize: 16, color: textMainColor),
+                        ),
+                        Icon(Icons.calendar_today, color: textMainColor),
+                      ],
                     ),
                   ),
-                  SizedBox(width: 5),
-                  Expanded(
-                    flex: 1,
-                    child: DropdownButtonFormField<String>(
-                      value: selectedGender, // กำหนดค่าเริ่มต้น
-                      items: ['ชาย', 'หญิง', 'อื่นๆ'].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedGender = value!;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'เพศ',
-                        labelStyle: TextStyle(color: textMainColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(25)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: borderColor, width: 1),
-                        ),
-                      ),
-                      validator: (value) =>
-                          value == null ? 'กรุณาเลือกเพศ' : null,
-                    ),
-                  ),
-                ]),
+                ),
                 SizedBox(height: 40),
                 ElevatedButton(
-                      onPressed: _next,
-                      child: Text(
-                        'ถัดไป',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                        minimumSize: Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        backgroundColor: borderColor,
-                      ),
+                  onPressed: _next,
+                  child: Text(
+                    'ถัดไป',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    backgroundColor: borderColor,
+                  ),
+                ),
               ],
-            )),
-      )),
+            ),
+          ),
+        ),
+      ),
     );
+  }
+}
+
+class DatePickerWidget extends StatefulWidget {
+  final DateTime initialDate;
+  final ValueChanged<DateTime> onDateSelected;
+
+  DatePickerWidget({required this.initialDate, required this.onDateSelected});
+
+  @override
+  _DatePickerWidgetState createState() => _DatePickerWidgetState();
+}
+
+class _DatePickerWidgetState extends State<DatePickerWidget> {
+  late int _selectedYear;
+  late int _selectedMonth;
+  late int _selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedYear = widget.initialDate.year + 543;
+    _selectedMonth = widget.initialDate.month;
+    _selectedDay = widget.initialDate.day;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'เลือกวันที่',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButton<int>(
+                  value: _selectedYear,
+                  items: List.generate(100, (index) {
+                    final year = DateTime.now().year + 543 - index;
+                    return DropdownMenuItem(
+                      value: year,
+                      child: Text('$year'),
+                    );
+                  }),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedYear = value!;
+                    });
+                  },
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: DropdownButton<int>(
+                  value: _selectedMonth,
+                  items: List.generate(12, (index) {
+                    final month = index + 1;
+                    return DropdownMenuItem(
+                      value: month,
+                      child: Text('${month.toString().padLeft(2, '0')}'),
+                    );
+                  }),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedMonth = value!;
+                    });
+                  },
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: DropdownButton<int>(
+                  value: _selectedDay,
+                  items: List.generate(31, (index) {
+                    final day = index + 1;
+                    return DropdownMenuItem(
+                      value: day,
+                      child: Text('${day.toString().padLeft(2, '0')}'),
+                    );
+                  }),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedDay = value!;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              final selectedDate = _convertToGregorian(
+                _selectedYear,
+                _selectedMonth,
+                _selectedDay,
+              );
+              widget.onDateSelected(selectedDate);
+              Navigator.pop(context);
+            },
+            child: Text('ตกลง'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  DateTime _convertToGregorian(int buddhistYear, int month, int day) {
+    return DateTime(buddhistYear - 543, month, day);
   }
 }
